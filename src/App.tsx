@@ -9,6 +9,10 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import JobApplication from "./pages/JobApplication";
 import AdminPanel from "./pages/AdminPanel";
+import ServiceProviders from "./pages/ServiceProviders";
+import Suppliers from "./pages/Suppliers";
+import Clients from "./pages/Clients";
+import Billing from "./pages/Billing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +29,10 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/apply" element={<JobApplication />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/providers" element={<ServiceProviders />} />
+          <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/clients" element={<Clients />} />
+          <Route path="/billing" element={<Billing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, Users, FileText, DollarSign, LogOut } from "lucide-react";
+import { Building2, Users, FileText, DollarSign, LogOut, Factory, Building } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
@@ -120,33 +120,56 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="outline">
-                Manage Providers
-              </Button>
+              <Link to="/providers">
+                <Button className="w-full" variant="outline">
+                  Manage Providers
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Building2 className="h-5 w-5 mr-2 text-green-600" />
-                Clients & Suppliers
+                <Building className="h-5 w-5 mr-2 text-green-600" />
+                Clients
               </CardTitle>
               <CardDescription>
-                Track clients and contractor companies
+                Track clients and manage relationships
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="outline">
-                Manage Clients
-              </Button>
+              <Link to="/clients">
+                <Button className="w-full" variant="outline">
+                  Manage Clients
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <FileText className="h-5 w-5 mr-2 text-purple-600" />
+                <Factory className="h-5 w-5 mr-2 text-purple-600" />
+                Suppliers
+              </CardTitle>
+              <CardDescription>
+                Manage contractor companies
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link to="/suppliers">
+                <Button className="w-full" variant="outline">
+                  Manage Suppliers
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FileText className="h-5 w-5 mr-2 text-orange-600" />
                 Billing & Reports
               </CardTitle>
               <CardDescription>
@@ -154,9 +177,11 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="outline">
-                View Billing
-              </Button>
+              <Link to="/billing">
+                <Button className="w-full" variant="outline">
+                  View Billing
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -164,7 +189,7 @@ const Dashboard = () => {
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2 text-orange-600" />
+                  <FileText className="h-5 w-5 mr-2 text-red-600" />
                   Applications
                 </CardTitle>
                 <CardDescription>
