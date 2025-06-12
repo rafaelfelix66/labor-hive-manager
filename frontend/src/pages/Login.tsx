@@ -4,33 +4,55 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2 } from "lucide-react";
+import { Building2, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { apiService } from "@/services/api";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Demo login logic - in real app this would be authentication
-    if (username && password) {
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userRole', username === 'admin' ? 'admin' : 'user');
-      toast({
-        title: "Login Successful",
-        description: "Welcome to LaborPro!",
-      });
-      navigate('/dashboard');
-    } else {
+    if (!username || !password) {
       toast({
         title: "Login Failed",
         description: "Please enter both username and password.",
         variant: "destructive",
       });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await apiService.login({ username, password });
+      
+      if (response.success && response.data) {
+        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userRole', response.data.user.role);
+        localStorage.setItem('userData', JSON.stringify(response.data.user));
+        
+        toast({
+          title: "Login Successful",
+          description: `Welcome back, ${response.data.user.username}!`,
+        });
+        
+        navigate('/dashboard');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -76,15 +98,22 @@ const Login = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full">
-                Sign In
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing In...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
             
             <div className="mt-6 text-center text-sm text-gray-600">
               <p>Demo credentials:</p>
-              <p>Username: admin | Password: admin (for admin access)</p>
-              <p>Username: user | Password: user (for regular access)</p>
+              <p>Username: admin | Password: aron$199 (for admin access)</p>
+              <p>Username: user | Password: user123 (for regular access)</p>
             </div>
           </CardContent>
         </Card>

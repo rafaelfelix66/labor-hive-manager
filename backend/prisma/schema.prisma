@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ApplicationStatus {
+  pending
+  approved
+  rejected
+}
+
+enum EntityType {
+  Corporation
+  LLC
+  Partnership
+}
+
+enum MarkupType {
+  Percent
+  Dollar
+}
+
+enum BillStatus {
+  Paid
+  Pending
+  Overdue
+}
+
+enum GenderType {
+  Male
+  Female
+  Other
+}
+
+model User {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  email       String   @unique
+  passwordHash String  @map("password_hash")
+  role        String   @default("user")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  reviewedApplications Application[] @relation("ReviewedBy")
+
+  @@map("users")
+}
+
+model Application {
+  id                        String            @id @default(uuid())
+  firstName                 String            @map("first_name")
+  lastName                  String            @map("last_name")
+  email                     String
+  phone                     String
+  dateOfBirth               DateTime          @map("date_of_birth") @db.Date
+  ssn                       String
+  gender                    GenderType
+  englishLevel              Int               @map("english_level")
+  hasDriversLicense         Boolean           @default(false) @map("has_drivers_license")
+  licenseFileUrl            String?           @map("license_file_url")
+  workExperience            String[]          @map("work_experience")
+  additionalExperience      String?           @map("additional_experience")
+  previousCompanyName       String?           @map("previous_company_name")
+  previousCompanyPhone      String?           @map("previous_company_phone")
+  previousCompanyEmail      String?           @map("previous_company_email")
+  address1                  String
+  suite                     String?
+  city                      String
+  state                     String
+  zipCode                   String            @map("zip_code")
+  emergencyContactName      String            @map("emergency_contact_name")
+  emergencyContactPhone     String            @map("emergency_contact_phone")
+  emergencyContactRelation  String            @map("emergency_contact_relation")
+  howDidYouHear             String            @map("how_did_you_hear")
+  status                    ApplicationStatus @default(pending)
+  submittedAt               DateTime          @default(now()) @map("submitted_at")
+  reviewedAt                DateTime?         @map("reviewed_at")
+  reviewedBy                String?           @map("reviewed_by")
+
+  // Relations
+  reviewer        User?            @relation("ReviewedBy", fields: [reviewedBy], references: [id])
+  serviceProvider ServiceProvider?
+
+  @@map("applications")
+}
+
+model ServiceProvider {
+  id            String   @id @default(uuid())
+  applicationId String   @unique @map("application_id")
+  services      String[]
+  hourlyRate    Decimal  @map("hourly_rate") @db.Decimal(10, 2)
+  assignedTo    String   @map("assigned_to")
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id])
+  bills       Bill[]
+
+  @@map("service_providers")
+}
+
+model Company {
+  id            String     @id @default(uuid())
+  companyName   String     @map("company_name")
+  entity        EntityType
+  type          String // 'client' or 'supplier'
+  street        String
+  suite         String?
+  city          String
+  state         String
+  zipCode       String     @map("zip_code")
+  country       String     @default("USA")
+  wcClass       String?    @map("wc_class")
+  markupType    MarkupType? @map("markup_type")
+  markupValue   Decimal?   @map("markup_value") @db.Decimal(10, 2)
+  commission    Decimal?   @db.Decimal(5, 2)
+  assignedTo    String?    @map("assigned_to")
+  internalNotes String?    @map("internal_notes")
+  active        Boolean    @default(true)
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  bills Bill[]
+
+  @@map("companies")
+}
+
+model Bill {
+  id            String     @id @default(uuid())
+  billNumber    String     @unique @map("bill_number")
+  clientId      String     @map("client_id")
+  providerId    String     @map("provider_id")
+  service       String
+  hoursWorked   Decimal    @map("hours_worked") @db.Decimal(5, 2)
+  serviceRate   Decimal    @map("service_rate") @db.Decimal(10, 2)
+  totalClient   Decimal    @map("total_client") @db.Decimal(10, 2)
+  totalProvider Decimal    @map("total_provider") @db.Decimal(10, 2)
+  status        BillStatus @default(Pending)
+  dueDate       DateTime?  @map("due_date") @db.Date
+  paidDate      DateTime?  @map("paid_date") @db.Date
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  client   Company         @relation(fields: [clientId], references: [id])
+  provider ServiceProvider @relation(fields: [providerId], references: [id])
+
+  @@map("bills")
+}
