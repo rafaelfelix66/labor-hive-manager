@@ -27,7 +27,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT || '5000');
 
 // Rate limiting
 const limiter = rateLimit({
@@ -74,7 +74,7 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     // Start server without database for now
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV}`);
       console.log(`🔗 API available at: http://localhost:${PORT}/api`);

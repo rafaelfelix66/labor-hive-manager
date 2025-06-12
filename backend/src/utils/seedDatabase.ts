@@ -1,5 +1,6 @@
 import { prisma } from './database';
 import { hashPassword } from './auth';
+import { seedClients } from './seedClients';
 
 export const seedDatabase = async () => {
   try {
@@ -52,6 +53,9 @@ export const seedDatabase = async () => {
       email: regularUser.email,
       role: regularUser.role,
     });
+
+    // Seed clients
+    await seedClients();
 
     console.log('🎉 Database seeding completed successfully!');
   } catch (error) {

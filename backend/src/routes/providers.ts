@@ -1,50 +1,31 @@
 import { Router } from 'express';
+import {
+  getAllProviders,
+  getProviderById,
+  createProvider,
+  updateProvider,
+  deleteProvider
+} from '../controllers/providersController';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
+// Apply authentication middleware to all routes
+router.use(authenticate);
+
 // GET /api/providers
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Get all service providers endpoint - to be implemented',
-    data: [],
-  });
-});
+router.get('/', getAllProviders);
 
 // POST /api/providers
-router.post('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Create service provider endpoint - to be implemented',
-    data: null,
-  });
-});
+router.post('/', createProvider);
 
 // GET /api/providers/:id
-router.get('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Get service provider by ID endpoint - to be implemented',
-    data: null,
-  });
-});
+router.get('/:id', getProviderById);
 
 // PUT /api/providers/:id
-router.put('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Update service provider endpoint - to be implemented',
-    data: null,
-  });
-});
+router.put('/:id', updateProvider);
 
 // DELETE /api/providers/:id
-router.delete('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Delete service provider endpoint - to be implemented',
-    data: null,
-  });
-});
+router.delete('/:id', deleteProvider);
 
 export default router;
