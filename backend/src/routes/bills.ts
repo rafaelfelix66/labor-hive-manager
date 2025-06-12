@@ -1,59 +1,39 @@
 import { Router } from 'express';
+import { authenticate } from '../middleware/auth';
+import {
+  getBills,
+  getBillById,
+  createBill,
+  updateBill,
+  deleteBill,
+  generateBillPDF,
+  getReports
+} from '../controllers/billsController';
 
 const router = Router();
 
-// GET /api/bills
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Get all bills endpoint - to be implemented',
-    data: [],
-  });
-});
+// Apply authentication to all routes
+router.use(authenticate);
 
-// POST /api/bills
-router.post('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Create bill endpoint - to be implemented',
-    data: null,
-  });
-});
+// GET /api/bills - Get all bills with filtering
+router.get('/', getBills);
 
-// GET /api/bills/:id
-router.get('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Get bill by ID endpoint - to be implemented',
-    data: null,
-  });
-});
+// GET /api/bills/reports - Get financial reports
+router.get('/reports', getReports);
 
-// PUT /api/bills/:id
-router.put('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Update bill endpoint - to be implemented',
-    data: null,
-  });
-});
+// POST /api/bills - Create new bill
+router.post('/', createBill);
 
-// DELETE /api/bills/:id
-router.delete('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Delete bill endpoint - to be implemented',
-    data: null,
-  });
-});
+// GET /api/bills/:id - Get bill by ID
+router.get('/:id', getBillById);
 
-// GET /api/bills/:id/pdf
-router.get('/:id/pdf', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Generate bill PDF endpoint - to be implemented',
-    data: null,
-  });
-});
+// PUT /api/bills/:id - Update bill
+router.put('/:id', updateBill);
+
+// DELETE /api/bills/:id - Delete bill
+router.delete('/:id', deleteBill);
+
+// GET /api/bills/:id/pdf - Generate bill PDF
+router.get('/:id/pdf', generateBillPDF);
 
 export default router;

@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export interface LoginRequest {
   username: string;
@@ -30,6 +30,10 @@ class ApiService {
   private getAuthHeader(): HeadersInit {
     const token = localStorage.getItem('authToken');
     return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  private getAuthToken(): string | null {
+    return localStorage.getItem('authToken');
   }
 
   private async request<T>(
@@ -303,6 +307,147 @@ class ApiService {
     return this.request(`/suppliers/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  // Bills
+  async getBills(params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    clientId?: string;
+    providerId?: string;
+    startDate?: string;
+    endDate?: string;
+    search?: string;
+  }): Promise<ApiResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.page) {
+      queryParams.append('page', params.page.toString());
+    }
+    if (params?.limit) {
+      queryParams.append('limit', params.limit.toString());
+    }
+    if (params?.status) {
+      queryParams.append('status', params.status);
+    }
+    if (params?.clientId) {
+      queryParams.append('clientId', params.clientId);
+    }
+    if (params?.providerId) {
+      queryParams.append('providerId', params.providerId);
+    }
+    if (params?.startDate) {
+      queryParams.append('startDate', params.startDate);
+    }
+    if (params?.endDate) {
+      queryParams.append('endDate', params.endDate);
+    }
+    if (params?.search) {
+      queryParams.append('search', params.search);
+    }
+
+    const query = queryParams.toString();
+    return this.request<any[]>(`/bills${query ? `?${query}` : ''}`);
+  }
+
+  async getBill(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/bills/${id}`);
+  }
+
+  async createBill(data: {
+    clientId: string;
+    providerId: string;
+    service: string;
+    hoursWorked: number;
+    serviceRate: number;
+    dueDate?: string;
+  }): Promise<ApiResponse<any>> {
+    return this.request<any>('/bills', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateBill(id: string, data: {
+    service?: string;
+    hoursWorked?: number;
+    serviceRate?: number;
+    status?: string;
+    dueDate?: string;
+    paidDate?: string;
+  }): Promise<ApiResponse<any>> {
+    return this.request<any>(`/bills/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteBill(id: string): Promise<ApiResponse> {
+    return this.request(`/bills/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getBillReports(params?: {
+    startDate?: string;
+    endDate?: string;
+    period?: string;
+  }): Promise<ApiResponse<any>> {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.startDate) {
+      queryParams.append('startDate', params.startDate);
+    }
+    if (params?.endDate) {
+      queryParams.append('endDate', params.endDate);
+    }
+    if (params?.period) {
+      queryParams.append('period', params.period);
+    }
+
+    const query = queryParams.toString();
+    return this.request<any>(`/bills/reports${query ? `?${query}` : ''}`);
+  }
+
+  async generateBillPDF(id: string, billNumber?: string): Promise<void> {
+    const token = this.getAuthToken();
+    if (!token) {
+      throw new Error('No authentication token found. Please login again.');
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/bills/${id}/pdf`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate PDF: ${response.statusText}`);
+      }
+
+      // Get the PDF blob
+      const blob = await response.blob();
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `bill-${billNumber || id}.pdf`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      throw error;
+    }
   }
 }
 

@@ -30,7 +30,12 @@ services:
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/labor_hive
-      - JWT_SECRET=your-jwt-secret-key
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+      - JWT_EXPIRES_IN=7d
+      - PORT=5000
+      - CORS_ORIGIN=http://localhost:3000
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
       - REDIS_URL=redis://redis:6379
     depends_on:
       - postgres
@@ -62,6 +67,24 @@ services:
       - redis_data:/data
     networks:
       - labor-network
+
+  # Prisma Studio
+  prisma-studio:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/labor_hive
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+    networks:
+      - labor-network
+    command: ["npx", "prisma", "studio", "--hostname", "0.0.0.0", "--port", "5555"]
 
   # Nginx Reverse Proxy
   nginx:
