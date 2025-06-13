@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { ApplicationForm } from "@/components/ApplicationForm";
-import { Building2 } from "lucide-react";
+// Building2 import removed - now using EOM Staffing logo
 import { Link } from "react-router-dom";
 
 const JobApplication = () => {
@@ -12,8 +12,7 @@ const JobApplication = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center">
-              <Building2 className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">LaborPro</span>
+              <img src="/eom staffing.png" alt="EOM Staffing" className="h-12 w-auto" />
             </Link>
             <Link to="/" className="text-blue-600 hover:text-blue-800 text-sm">
               ← Back to Home

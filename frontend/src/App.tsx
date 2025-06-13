@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import JobApplication from "./pages/JobApplication";
 import AdminPanel from "./pages/AdminPanel";
 import ServiceProviders from "./pages/ServiceProviders";
+import Services from "./pages/Services";
 import Suppliers from "./pages/Suppliers";
 import Clients from "./pages/Clients";
 import Billing from "./pages/Billing";
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/apply" element={<JobApplication />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/providers" element={<ServiceProviders />} />
+          <Route path="/services" element={<Services />} />
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/billing" element={<Billing />} />

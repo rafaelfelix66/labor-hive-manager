@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  Building2, 
   FileText, 
   DollarSign, 
   Download, 
@@ -259,8 +258,7 @@ const Billing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/dashboard" className="flex items-center">
-              <Building2 className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">LaborPro</span>
+              <img src="/eom staffing.png" alt="EOM Staffing" className="h-12 w-auto" />
             </Link>
             <Link to="/dashboard" className="text-blue-600 hover:text-blue-800 text-sm">
               ← Back to Dashboard

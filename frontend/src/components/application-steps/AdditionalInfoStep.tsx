@@ -76,8 +76,12 @@ export const AdditionalInfoStep = ({ data, updateData }: AdditionalInfoStepProps
             <Input
               id="zipCode"
               value={data.zipCode}
-              onChange={(e) => updateData({ zipCode: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                updateData({ zipCode: value });
+              }}
               placeholder="12345"
+              maxLength={5}
               required
             />
           </div>
@@ -105,8 +109,20 @@ export const AdditionalInfoStep = ({ data, updateData }: AdditionalInfoStepProps
               id="emergencyContactPhone"
               type="tel"
               value={data.emergencyContactPhone}
-              onChange={(e) => updateData({ emergencyContactPhone: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                let formatted = value;
+                if (value.length >= 6) {
+                  formatted = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+                } else if (value.length >= 3) {
+                  formatted = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+                } else if (value.length > 0) {
+                  formatted = `(${value}`;
+                }
+                updateData({ emergencyContactPhone: formatted });
+              }}
               placeholder="(555) 123-4567"
+              maxLength={14}
               required
             />
           </div>

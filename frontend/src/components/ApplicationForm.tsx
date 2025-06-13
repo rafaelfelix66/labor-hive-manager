@@ -8,6 +8,8 @@ import { ProfessionalExperienceStep } from "./application-steps/ProfessionalExpe
 import { AdditionalInfoStep } from "./application-steps/AdditionalInfoStep";
 import { ReviewStep } from "./application-steps/ReviewStep";
 import { toast } from "@/hooks/use-toast";
+import { apiService } from "@/services/api";
+import { Loader2 } from "lucide-react";
 
 export interface ApplicationData {
   // Personal Info
@@ -23,7 +25,8 @@ export interface ApplicationData {
   englishLevel: number;
   hasDriversLicense: boolean;
   licenseFile?: File;
-  workExperience: string[];
+  services: string[];
+  hourlyRate: number;
   additionalExperience: string;
   previousCompanyName: string;
   previousCompanyPhone: string;
@@ -51,7 +54,8 @@ const initialData: ApplicationData = {
   gender: "",
   englishLevel: 50,
   hasDriversLicense: false,
-  workExperience: [],
+  services: [],
+  hourlyRate: 15,
   additionalExperience: "",
   previousCompanyName: "",
   previousCompanyPhone: "",
@@ -70,6 +74,8 @@ const initialData: ApplicationData = {
 export const ApplicationForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ApplicationData>(initialData);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const steps = [
     { number: 1, title: "Personal Information" },
@@ -96,26 +102,75 @@ export const ApplicationForm = () => {
     }
   };
 
-  const handleSubmit = () => {
-    // Store in localStorage for demo purposes
-    const applications = JSON.parse(localStorage.getItem('applications') || '[]');
-    const newApplication = {
-      ...formData,
-      id: Date.now().toString(),
-      submittedAt: new Date().toISOString(),
-      status: 'pending'
-    };
-    applications.push(newApplication);
-    localStorage.setItem('applications', JSON.stringify(applications));
+  const validateCurrentStep = () => {
+    switch (currentStep) {
+      case 1:
+        return formData.firstName && formData.lastName && formData.email && 
+               formData.phone && formData.dateOfBirth && formData.ssn && formData.gender;
+      case 2:
+        return formData.services.length > 0 && formData.hourlyRate > 0;
+      case 3:
+        return formData.address1 && formData.city && formData.state && 
+               formData.zipCode && formData.emergencyContactName && 
+               formData.emergencyContactPhone && formData.emergencyContactRelation && 
+               formData.howDidYouHear;
+      case 4:
+        return agreedToTerms;
+      default:
+        return true;
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!validateCurrentStep()) {
+      toast({
+        title: "Missing Required Fields",
+        description: "Please fill in all required fields before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     
-    toast({
-      title: "Application Submitted!",
-      description: "Thank you for your application. We'll review it shortly.",
-    });
-    
-    // Reset form
-    setFormData(initialData);
-    setCurrentStep(1);
+    try {
+      // Prepare data for API submission
+      const applicationData = {
+        ...formData,
+        dateOfBirth: formData.dateOfBirth,
+        // Handle file upload separately if needed
+        // For now, we'll store the file name if it exists (until file upload is implemented)
+        licenseFileUrl: formData.licenseFile ? `temp_${Date.now()}_${formData.licenseFile.name}` : null,
+      };
+
+      // Remove the File object as it can't be serialized
+      const { licenseFile, ...submitData } = applicationData;
+
+      const response = await apiService.createApplication(submitData);
+      
+      if (response.success) {
+        toast({
+          title: "Application Submitted Successfully!",
+          description: "Thank you for your application. We'll review it shortly and contact you soon.",
+        });
+        
+        // Reset form
+        setFormData(initialData);
+        setCurrentStep(1);
+        setAgreedToTerms(false);
+      } else {
+        throw new Error(response.message || 'Failed to submit application');
+      }
+    } catch (error: any) {
+      console.error('Error submitting application:', error);
+      toast({
+        title: "Submission Failed",
+        description: error.message || "There was an error submitting your application. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep = () => {
@@ -127,7 +182,7 @@ export const ApplicationForm = () => {
       case 3:
         return <AdditionalInfoStep data={formData} updateData={updateFormData} />;
       case 4:
-        return <ReviewStep data={formData} />;
+        return <ReviewStep data={formData} onTermsChange={setAgreedToTerms} />;
       default:
         return null;
     }
@@ -179,12 +234,26 @@ export const ApplicationForm = () => {
             </Button>
             
             {currentStep < steps.length ? (
-              <Button onClick={nextStep}>
+              <Button 
+                onClick={nextStep}
+                disabled={!validateCurrentStep()}
+              >
                 Next
               </Button>
             ) : (
-              <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700">
-                Submit Application
+              <Button 
+                onClick={handleSubmit} 
+                className="bg-green-600 hover:bg-green-700"
+                disabled={isSubmitting || !validateCurrentStep()}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Application'
+                )}
               </Button>
             )}
           </div>

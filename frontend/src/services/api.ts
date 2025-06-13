@@ -27,6 +27,8 @@ export interface ApiResponse<T = any> {
 }
 
 class ApiService {
+  private baseURL = API_BASE_URL;
+
   private getAuthHeader(): HeadersInit {
     const token = localStorage.getItem('authToken');
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -40,7 +42,7 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const url = `${this.baseURL}${endpoint}`;
     
     const config: RequestInit = {
       headers: {
@@ -67,20 +69,20 @@ class ApiService {
   }
 
   async login(credentials: LoginRequest): Promise<ApiResponse<AuthResponse>> {
-    return this.request<AuthResponse>('/auth/login', {
+    return this.request<AuthResponse>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
   }
 
   async logout(): Promise<ApiResponse> {
-    return this.request('/auth/logout', {
+    return this.request('/api/auth/logout', {
       method: 'POST',
     });
   }
 
   async getCurrentUser(): Promise<ApiResponse<User>> {
-    return this.request<User>('/auth/me');
+    return this.request<User>('/api/auth/me');
   }
 
   // Service Providers
@@ -110,11 +112,11 @@ class ApiService {
     }
 
     const query = queryParams.toString();
-    return this.request<any[]>(`/providers${query ? `?${query}` : ''}`);
+    return this.request<any[]>(`/api/providers${query ? `?${query}` : ''}`);
   }
 
   async getProvider(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/providers/${id}`);
+    return this.request<any>(`/api/providers/${id}`);
   }
 
   async createProvider(data: {
@@ -123,7 +125,7 @@ class ApiService {
     hourlyRate: number;
     assignedTo: string;
   }): Promise<ApiResponse<any>> {
-    return this.request<any>('/providers', {
+    return this.request<any>('/api/providers', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -135,14 +137,14 @@ class ApiService {
     assignedTo?: string;
     active?: boolean;
   }): Promise<ApiResponse<any>> {
-    return this.request<any>(`/providers/${id}`, {
+    return this.request<any>(`/api/providers/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deleteProvider(id: string): Promise<ApiResponse> {
-    return this.request(`/providers/${id}`, {
+    return this.request(`/api/providers/${id}`, {
       method: 'DELETE',
     });
   }
@@ -170,11 +172,11 @@ class ApiService {
     }
 
     const query = queryParams.toString();
-    return this.request<any[]>(`/clients${query ? `?${query}` : ''}`);
+    return this.request<any[]>(`/api/clients${query ? `?${query}` : ''}`);
   }
 
   async getClient(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/clients/${id}`);
+    return this.request<any>(`/api/clients/${id}`);
   }
 
   async createClient(data: {
@@ -193,7 +195,7 @@ class ApiService {
     assignedTo?: string;
     internalNotes?: string;
   }): Promise<ApiResponse<any>> {
-    return this.request<any>('/clients', {
+    return this.request<any>('/api/clients', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -216,14 +218,14 @@ class ApiService {
     internalNotes?: string;
     active?: boolean;
   }): Promise<ApiResponse<any>> {
-    return this.request<any>(`/clients/${id}`, {
+    return this.request<any>(`/api/clients/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deleteClient(id: string): Promise<ApiResponse> {
-    return this.request(`/clients/${id}`, {
+    return this.request(`/api/clients/${id}`, {
       method: 'DELETE',
     });
   }
@@ -251,11 +253,11 @@ class ApiService {
     }
 
     const query = queryParams.toString();
-    return this.request<any[]>(`/suppliers${query ? `?${query}` : ''}`);
+    return this.request<any[]>(`/api/suppliers${query ? `?${query}` : ''}`);
   }
 
   async getSupplier(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/suppliers/${id}`);
+    return this.request<any>(`/api/suppliers/${id}`);
   }
 
   async createSupplier(data: {
@@ -274,7 +276,7 @@ class ApiService {
     assignedTo?: string;
     internalNotes?: string;
   }): Promise<ApiResponse<any>> {
-    return this.request<any>('/suppliers', {
+    return this.request<any>('/api/suppliers', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -297,14 +299,14 @@ class ApiService {
     internalNotes?: string;
     active?: boolean;
   }): Promise<ApiResponse<any>> {
-    return this.request<any>(`/suppliers/${id}`, {
+    return this.request<any>(`/api/suppliers/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deleteSupplier(id: string): Promise<ApiResponse> {
-    return this.request(`/suppliers/${id}`, {
+    return this.request(`/api/suppliers/${id}`, {
       method: 'DELETE',
     });
   }
@@ -348,11 +350,11 @@ class ApiService {
     }
 
     const query = queryParams.toString();
-    return this.request<any[]>(`/bills${query ? `?${query}` : ''}`);
+    return this.request<any[]>(`/api/bills${query ? `?${query}` : ''}`);
   }
 
   async getBill(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/bills/${id}`);
+    return this.request<any>(`/api/bills/${id}`);
   }
 
   async createBill(data: {
@@ -363,7 +365,7 @@ class ApiService {
     serviceRate: number;
     dueDate?: string;
   }): Promise<ApiResponse<any>> {
-    return this.request<any>('/bills', {
+    return this.request<any>('/api/bills', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -377,14 +379,14 @@ class ApiService {
     dueDate?: string;
     paidDate?: string;
   }): Promise<ApiResponse<any>> {
-    return this.request<any>(`/bills/${id}`, {
+    return this.request<any>(`/api/bills/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deleteBill(id: string): Promise<ApiResponse> {
-    return this.request(`/bills/${id}`, {
+    return this.request(`/api/bills/${id}`, {
       method: 'DELETE',
     });
   }
@@ -407,7 +409,7 @@ class ApiService {
     }
 
     const query = queryParams.toString();
-    return this.request<any>(`/bills/reports${query ? `?${query}` : ''}`);
+    return this.request<any>(`/api/bills/reports${query ? `?${query}` : ''}`);
   }
 
   async generateBillPDF(id: string, billNumber?: string): Promise<void> {
@@ -417,7 +419,7 @@ class ApiService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/bills/${id}/pdf`, {
+      const response = await fetch(`${this.baseURL}/api/bills/${id}/pdf`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -448,6 +450,156 @@ class ApiService {
       console.error('Error downloading PDF:', error);
       throw error;
     }
+  }
+
+  // Applications methods
+  async getApplications(params?: {
+    status?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.status) {
+      queryParams.append('status', params.status);
+    }
+    if (params?.search) {
+      queryParams.append('search', params.search);
+    }
+    if (params?.page) {
+      queryParams.append('page', params.page.toString());
+    }
+    if (params?.limit) {
+      queryParams.append('limit', params.limit.toString());
+    }
+
+    const query = queryParams.toString();
+    return this.request<any>(`/api/applications${query ? `?${query}` : ''}`);
+  }
+
+  async getApplication(id: string) {
+    return this.request<any>(`/api/applications/${id}`);
+  }
+
+  async createApplication(data: any) {
+    return this.request<any>('/api/applications', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateApplication(id: string, data: any) {
+    return this.request<any>(`/api/applications/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteApplication(id: string) {
+    return this.request<any>(`/api/applications/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getApplicationStats() {
+    return this.request<any>('/api/applications/stats');
+  }
+
+  // Services methods
+  async getServices(params?: {
+    active?: boolean;
+    page?: number;
+    limit?: number;
+  }) {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.active !== undefined) {
+      queryParams.append('active', params.active.toString());
+    }
+    if (params?.page) {
+      queryParams.append('page', params.page.toString());
+    }
+    if (params?.limit) {
+      queryParams.append('limit', params.limit.toString());
+    }
+
+    const query = queryParams.toString();
+    return this.request<any>(`/api/services${query ? `?${query}` : ''}`);
+  }
+
+  async getService(id: string) {
+    return this.request<any>(`/api/services/${id}`);
+  }
+
+  async createService(data: any) {
+    return this.request<any>('/api/services', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateService(id: string, data: any) {
+    return this.request<any>(`/api/services/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteService(id: string) {
+    return this.request<any>(`/api/services/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Upload methods
+  async uploadLicense(file: File): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('license', file);
+
+    const token = this.getAuthToken();
+    
+    try {
+      const response = await fetch(`${this.baseURL}/api/uploads/license`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // If JSON parsing fails, use the status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Check if response has content
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return response.json();
+      } else {
+        throw new Error('Server did not return a valid JSON response');
+      }
+    } catch (error) {
+      console.error('Upload request failed:', error);
+      throw error;
+    }
+  }
+
+  getFileUrl(filename: string): string {
+    return `${this.baseURL}/api/uploads/files/${filename}`;
+  }
+
+  getDownloadUrl(filename: string, originalName?: string): string {
+    const url = `${this.baseURL}/api/uploads/download/${filename}`;
+    return originalName ? `${url}?originalName=${encodeURIComponent(originalName)}` : url;
   }
 }
 

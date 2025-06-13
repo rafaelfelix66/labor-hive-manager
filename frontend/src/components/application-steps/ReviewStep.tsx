@@ -9,9 +9,10 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface ReviewStepProps {
   data: ApplicationData;
+  onTermsChange?: (agreed: boolean) => void;
 }
 
-export const ReviewStep = ({ data }: ReviewStepProps) => {
+export const ReviewStep = ({ data, onTermsChange }: ReviewStepProps) => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     personal: true,
@@ -153,7 +154,11 @@ export const ReviewStep = ({ data }: ReviewStepProps) => {
             <Checkbox 
               id="terms"
               checked={agreedToTerms}
-              onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+              onCheckedChange={(checked) => {
+                const agreed = checked as boolean;
+                setAgreedToTerms(agreed);
+                onTermsChange?.(agreed);
+              }}
             />
             <Label htmlFor="terms" className="text-sm leading-relaxed">
               I confirm that all the information provided is accurate and complete. 

@@ -57,8 +57,20 @@ export const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) =>
             id="phone"
             type="tel"
             value={data.phone}
-            onChange={(e) => updateData({ phone: e.target.value })}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              let formatted = value;
+              if (value.length >= 6) {
+                formatted = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+              } else if (value.length >= 3) {
+                formatted = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+              } else if (value.length > 0) {
+                formatted = `(${value}`;
+              }
+              updateData({ phone: formatted });
+            }}
             placeholder="(555) 123-4567"
+            maxLength={14}
             required
           />
         </div>
@@ -70,10 +82,12 @@ export const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) =>
           <Input
             id="dateOfBirth"
             type="date"
-            value={data.dateOfBirth}
+            value={data.dateOfBirth || ''}
             onChange={(e) => updateData({ dateOfBirth: e.target.value })}
+            max={new Date(new Date().setFullYear(new Date().getFullYear() - 16)).toISOString().split('T')[0]}
             required
           />
+          <p className="text-xs text-gray-500">Must be at least 16 years old</p>
         </div>
         
         <div className="space-y-2">
@@ -81,8 +95,18 @@ export const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) =>
           <Input
             id="ssn"
             value={data.ssn}
-            onChange={(e) => updateData({ ssn: e.target.value })}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              let formatted = value;
+              if (value.length >= 5) {
+                formatted = `${value.slice(0, 3)}-${value.slice(3, 5)}-${value.slice(5, 9)}`;
+              } else if (value.length >= 3) {
+                formatted = `${value.slice(0, 3)}-${value.slice(3)}`;
+              }
+              updateData({ ssn: formatted });
+            }}
             placeholder="XXX-XX-XXXX"
+            maxLength={11}
             required
           />
         </div>
@@ -95,9 +119,9 @@ export const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) =>
             <SelectValue placeholder="Select your gender" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="male">Male</SelectItem>
-            <SelectItem value="female">Female</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
+            <SelectItem value="Male">Male</SelectItem>
+            <SelectItem value="Female">Female</SelectItem>
+            <SelectItem value="Other">Other</SelectItem>
           </SelectContent>
         </Select>
       </div>

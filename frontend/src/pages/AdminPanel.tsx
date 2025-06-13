@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, FileText, Download, Search, Filter } from "lucide-react";
+import { FileText, Download, Search, Filter, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { apiService } from "@/services/api";
 
 interface Application {
   id: string;
@@ -18,8 +19,21 @@ interface Application {
   englishLevel: number;
   hasDriversLicense: boolean;
   workExperience: string[];
+  services?: string[];
+  hourlyRate?: number;
   submittedAt: string;
   status: 'pending' | 'approved' | 'rejected';
+  reviewedAt?: string;
+  reviewedBy?: string;
+  reviewer?: {
+    id: string;
+    username: string;
+    email: string;
+  };
+  serviceProvider?: {
+    id: string;
+    active: boolean;
+  };
 }
 
 const AdminPanel = () => {
@@ -29,6 +43,8 @@ const AdminPanel = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [englishFilter, setEnglishFilter] = useState("all");
   const [licenseFilter, setLicenseFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,11 +56,35 @@ const AdminPanel = () => {
       return;
     }
 
-    // Load applications from localStorage
-    const savedApplications = JSON.parse(localStorage.getItem('applications') || '[]');
-    setApplications(savedApplications);
-    setFilteredApplications(savedApplications);
+    // Load applications from API
+    fetchApplications();
   }, [navigate]);
+
+  const fetchApplications = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getApplications();
+      if (response.success) {
+        setApplications(response.data || []);
+        setFilteredApplications(response.data || []);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to load applications",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load applications",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     let filtered = applications;
@@ -77,17 +117,78 @@ const AdminPanel = () => {
     setFilteredApplications(filtered);
   }, [applications, searchTerm, statusFilter, englishFilter, licenseFilter]);
 
-  const updateApplicationStatus = (id: string, status: 'approved' | 'rejected') => {
-    const updatedApplications = applications.map(app =>
-      app.id === id ? { ...app, status } : app
-    );
-    setApplications(updatedApplications);
-    localStorage.setItem('applications', JSON.stringify(updatedApplications));
-    
-    toast({
-      title: "Status Updated",
-      description: `Application has been ${status}.`,
-    });
+  const updateApplicationStatus = async (id: string, status: 'approved' | 'rejected') => {
+    try {
+      setUpdating(id);
+      
+      // Get current user ID for reviewedBy
+      let currentUserId = null;
+      try {
+        const userResponse = await apiService.getCurrentUser();
+        if (userResponse.success) {
+          currentUserId = userResponse.data.id;
+        }
+      } catch (error) {
+        console.error('Error getting current user:', error);
+        // Fallback to localStorage
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        currentUserId = currentUser.id;
+      }
+
+      if (!currentUserId) {
+        toast({
+          title: "Authentication Error",
+          description: "Unable to identify current user. Please login again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const updateData: any = {
+        status,
+        reviewedBy: currentUserId
+      };
+
+      // If approving, use the services and hourly rate from the application
+      if (status === 'approved') {
+        const application = applications.find(app => app.id === id);
+        if (!application?.services?.length || !application?.hourlyRate) {
+          toast({
+            title: "Missing Information",
+            description: "This application is missing services or hourly rate information. Please contact the applicant to resubmit.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        updateData.services = application.services;
+        updateData.hourlyRate = application.hourlyRate.toString();
+        updateData.assignedTo = 'Manager A'; // Default value
+      }
+
+      const response = await apiService.updateApplication(id, updateData);
+      
+      if (response.success) {
+        // Refresh applications list
+        await fetchApplications();
+        
+        toast({
+          title: "Status Updated",
+          description: `Application has been ${status}.`,
+        });
+      } else {
+        throw new Error(response.message || 'Failed to update application');
+      }
+    } catch (error: any) {
+      console.error('Error updating application:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update application status",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(null);
+    }
   };
 
   const exportToCSV = () => {
@@ -124,8 +225,7 @@ const AdminPanel = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link to="/dashboard" className="flex items-center">
-                <Building2 className="h-8 w-8 text-blue-600" />
-                <span className="ml-2 text-xl font-bold text-gray-900">LaborPro</span>
+                <img src="/eom staffing.png" alt="EOM Staffing" className="h-12 w-auto" />
               </Link>
               <span className="ml-4 text-gray-400">|</span>
               <span className="ml-4 text-lg font-medium text-gray-700">Admin Panel</span>
@@ -210,7 +310,17 @@ const AdminPanel = () => {
 
         {/* Applications Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredApplications.length === 0 ? (
+          {loading ? (
+            <Card className="col-span-full">
+              <CardContent className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Loader2 className="h-12 w-12 text-blue-600 mx-auto mb-4 animate-spin" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Applications</h3>
+                  <p className="text-gray-600">Please wait while we fetch the applications...</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : filteredApplications.length === 0 ? (
             <Card className="col-span-full">
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
@@ -264,6 +374,26 @@ const AdminPanel = () => {
                         )}
                       </div>
                     </div>
+                    {application.services && application.services.length > 0 && (
+                      <div>
+                        <strong>Services:</strong>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {application.services.slice(0, 3).map((service, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {service}
+                            </Badge>
+                          ))}
+                          {application.services.length > 3 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{application.services.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {application.hourlyRate && (
+                      <div><strong>Desired Rate:</strong> ${application.hourlyRate}/hour</div>
+                    )}
                     <div className="text-gray-500">
                       Submitted: {new Date(application.submittedAt).toLocaleDateString()}
                     </div>
@@ -275,15 +405,31 @@ const AdminPanel = () => {
                         size="sm" 
                         onClick={() => updateApplicationStatus(application.id, 'approved')}
                         className="bg-green-600 hover:bg-green-700"
+                        disabled={updating === application.id}
                       >
-                        Approve
+                        {updating === application.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Approving...
+                          </>
+                        ) : (
+                          'Approve'
+                        )}
                       </Button>
                       <Button 
                         size="sm" 
                         variant="destructive"
                         onClick={() => updateApplicationStatus(application.id, 'rejected')}
+                        disabled={updating === application.id}
                       >
-                        Reject
+                        {updating === application.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Rejecting...
+                          </>
+                        ) : (
+                          'Reject'
+                        )}
                       </Button>
                     </div>
                   )}

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Mail, Phone, MapPin, Calendar, DollarSign, User, Briefcase, CheckCircle, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Mail, Phone, MapPin, Calendar, DollarSign, User, Briefcase, CheckCircle, XCircle, Eye, FileImage, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { apiService } from "@/services/api";
 
@@ -15,6 +16,7 @@ interface ViewProviderModalProps {
 const ViewProviderModal = ({ open, onOpenChange, providerId }: ViewProviderModalProps) => {
   const [provider, setProvider] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [showLicense, setShowLicense] = useState(false);
 
   useEffect(() => {
     if (open && providerId) {
@@ -52,6 +54,76 @@ const ViewProviderModal = ({ open, onOpenChange, providerId }: ViewProviderModal
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const handleViewLicense = () => {
+    console.log('Provider data:', provider);
+    console.log('License file URL:', provider?.application?.licenseFileUrl);
+    console.log('License original name:', provider?.application?.licenseFileOriginalName);
+    
+    if (provider?.application?.licenseFileUrl) {
+      // Check if it's a real file (new format) or old temporary reference
+      if (provider.application.licenseFileUrl.includes('temp_')) {
+        toast({
+          title: "File Preview Not Available", 
+          description: "This is an old file reference. File upload service was not available when this was uploaded.",
+          variant: "destructive",
+        });
+        setShowLicense(true);
+      } else {
+        // Open the actual file - ensure we're using the correct filename
+        const filename = provider.application.licenseFileUrl;
+        const url = apiService.getFileUrl(filename);
+        console.log('Opening file URL:', url);
+        console.log('Full URL being opened:', url);
+        
+        // Test if file exists by trying to fetch it first
+        fetch(url, { method: 'HEAD' })
+          .then(response => {
+            if (response.ok) {
+              window.open(url, '_blank');
+            } else {
+              throw new Error(`File not found (${response.status})`);
+            }
+          })
+          .catch(error => {
+            console.error('Error accessing file:', error);
+            toast({
+              title: "File Access Error",
+              description: `Could not access the license file. Please check if the file exists on the server.`,
+              variant: "destructive",
+            });
+            setShowLicense(true); // Show the file info anyway
+          });
+      }
+    } else {
+      toast({
+        title: "License File Not Available",
+        description: "No license file found for this provider.",
+        variant: "destructive",
+      });
+      console.log('No license file URL found in provider data');
+    }
+  };
+
+  const handleDownloadLicense = () => {
+    if (provider?.application?.licenseFileUrl) {
+      // Check if it's a real file (new format) or old temporary reference
+      if (provider.application.licenseFileUrl.includes('temp_')) {
+        toast({
+          title: "Download Not Available",
+          description: "This is an old file reference. File upload service was not available when this was uploaded.",
+          variant: "destructive",
+        });
+      } else {
+        // Download the actual file
+        const url = apiService.getDownloadUrl(
+          provider.application.licenseFileUrl, 
+          provider.application.licenseFileOriginalName || 'license-file'
+        );
+        window.open(url, '_blank');
+      }
+    }
   };
 
   if (!provider && !loading) {
@@ -164,9 +236,33 @@ const ViewProviderModal = ({ open, onOpenChange, providerId }: ViewProviderModal
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Driver's License</p>
-                  <Badge variant={provider.hasLicense ? "default" : "secondary"} className="mt-1">
-                    {provider.hasLicense ? "Yes" : "No"}
-                  </Badge>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant={provider.hasLicense ? "default" : "secondary"}>
+                      {provider.hasLicense ? "Yes" : "No"}
+                    </Badge>
+                    {provider.hasLicense && provider.application?.licenseFileUrl && (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleViewLicense}
+                          className="flex items-center gap-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleDownloadLicense}
+                          className="flex items-center gap-1"
+                        >
+                          <Download className="h-3 w-3" />
+                          Download
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Assigned To</p>
@@ -194,6 +290,64 @@ const ViewProviderModal = ({ open, onOpenChange, providerId }: ViewProviderModal
                 </div>
               </div>
             </div>
+
+            {/* License File Viewer */}
+            {showLicense && provider.application?.licenseFileUrl && (
+              <>
+                <Separator />
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <FileImage className="h-4 w-4" />
+                    Driver's License File
+                  </h3>
+                  <div className="bg-gray-50 p-4 rounded-lg border-2 border-dashed border-gray-300">
+                    <div className="text-center">
+                      <FileImage className="h-12 w-12 mx-auto text-gray-400 mb-2" />
+                      <p className="text-sm font-medium text-gray-600 mb-1">License File</p>
+                      <p className="text-xs text-gray-500">{provider.application.licenseFileUrl}</p>
+                      {provider.application.licenseFileUrl.includes('temp_') ? (
+                        <>
+                          <p className="text-xs text-red-600 mt-2 font-medium">
+                            ⚠ Legacy file reference
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            This is from before file upload service was implemented. Actual file is not available.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-xs text-green-600 mt-2 font-medium">
+                            ✓ File available for viewing and download
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Original filename: {provider.application.licenseFileOriginalName || 'Unknown'}
+                          </p>
+                        </>
+                      )}
+                      <div className="flex gap-2 mt-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleDownloadLicense}
+                          className="flex items-center gap-1"
+                          disabled={provider.application.licenseFileUrl.includes('temp_')}
+                        >
+                          <Download className="h-3 w-3" />
+                          Download File
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowLicense(false)}
+                        >
+                          Hide License
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Application Details (if available) */}
             {provider.application && (

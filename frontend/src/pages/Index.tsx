@@ -12,8 +12,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Building2 className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">LaborPro</span>
+              <img src="/eom staffing.png" alt="EOM Staffing" className="h-12 w-auto" />
             </div>
             <div className="flex space-x-4">
               <Link to="/apply">
