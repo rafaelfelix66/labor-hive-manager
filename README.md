@@ -32,6 +32,15 @@ O Labor Hive Manager é uma plataforma completa para gerenciar serviços de free
 - **📊 Gráficos Financeiros** - Visualização de dados de billing
 - **🔍 Busca e Filtros** - Sistema avançado de filtros para todas as entidades
 
+### 🆕 Novas Funcionalidades v2.0
+- **🎨 EOM Staffing Branding** - Logo corporativo em todas as páginas e favicon personalizado
+- **🏷️ Gestão de Serviços Dinâmica** - Sistema completo de criação e gestão de tipos de serviço
+- **📝 Formulário de Aplicação Aprimorado** - Data de nascimento em formato US, validação obrigatória de termos
+- **📁 Sistema de Upload de Arquivos** - Upload completo de licenças com visualização e download
+- **🔍 Visualização de Licenças** - Sistema robusto para visualizar e baixar documentos de motorista
+- **📊 Dashboard Aprimorado** - Estatísticas em tempo real com melhor tratamento de erros
+- **🔒 Validação de Formulários** - Checkbox obrigatório para aceite de termos e condições
+
 ### Backend (API)
 - **Autenticação JWT** - Sistema seguro de autenticação
 - **CRUD Completo** - Para todas as entidades (Users, Applications, Providers, Clients, Suppliers, Bills)
@@ -192,6 +201,54 @@ Admin: username: admin, password: aron$199
 User:  username: user,  password: user123
 ```
 
+## 🔧 Detalhes das Novas Funcionalidades v2.0
+
+### 🎨 EOM Staffing Branding
+- **Logo Atualizado**: Substituição completa do LaborPro pelo logo da EOM Staffing
+- **Favicon Personalizado**: Ícone personalizado na aba do navegador
+- **Metadados SEO**: Título e descrições atualizados para EOM Staffing
+- **Tamanhos Responsivos**: Logo em tamanhos otimizados (h-12 no dashboard, h-16 no login)
+
+### 🏷️ Sistema de Gestão de Serviços
+- **CRUD Completo**: Criar, editar, excluir e listar tipos de serviço
+- **Taxa Média por Hora**: Campo para definir preço médio de cada serviço
+- **Status Ativo/Inativo**: Controle de visibilidade dos serviços
+- **Integração com Formulários**: Carregamento dinâmico de serviços nas aplicações
+- **API Endpoints**: `/api/services` com filtros e paginação
+
+### 📁 Sistema de Upload de Arquivos
+- **Upload Seguro**: Multer com validação de tipos de arquivo (JPG, PNG, PDF)
+- **Armazenamento Local**: Sistema robusto de armazenamento em `/app/uploads`
+- **Drag & Drop**: Interface intuitiva para upload de licenças
+- **Feedback Visual**: Indicadores de progresso e status de upload
+- **Validação de Tamanho**: Limite de 10MB por arquivo
+
+### 🔍 Visualização de Licenças de Motorista
+- **Visualização Inline**: Abrir documentos em nova aba do navegador
+- **Download Direto**: Botão de download com nome original do arquivo
+- **Verificação de Arquivo**: Validação se arquivo existe antes de tentar abrir
+- **Fallback para Arquivos Antigos**: Mensagens explicativas para referências temporárias
+- **Debug Logging**: Logs detalhados para troubleshooting
+
+### 📝 Melhorias no Formulário de Aplicação
+- **Data US Format**: Campo de data de nascimento em formato MM/DD/YYYY
+- **Validação Obrigatória**: Checkbox de termos e condições obrigatório
+- **Upload Integrado**: Sistema de upload de licença no passo 2
+- **Feedback em Inglês**: Todas as mensagens de upload em inglês
+- **Prevenção de Envio**: Botão bloqueado até aceitar os termos
+
+### 📊 Dashboard Aprimorado
+- **Tratamento de Erros**: Cada API call com tratamento individual de falhas
+- **Estatísticas Robustas**: Cálculos funcionam mesmo com falha em algumas APIs
+- **Rate Limiting Fix**: Configuração de rate limiting que não bloqueia CORS
+- **Logs Detalhados**: Console logs para diagnóstico de problemas
+
+### 🔒 Segurança e Validação
+- **CORS Configurado**: Headers corretos para cross-origin requests
+- **Rate Limiting Inteligente**: Bypass para OPTIONS requests (CORS preflight)
+- **Validação de Schema**: Prisma schema atualizado com novos campos
+- **Error Boundaries**: Tratamento gracioso de erros na UI
+
 ## 📝 API Endpoints
 
 ### Autenticação
@@ -224,9 +281,19 @@ User:  username: user,  password: user123
 - `GET /api/bills/:id/pdf` - **Gerar PDF da fatura**
 - `GET /api/bills/reports` - Relatórios de faturamento
 
-### Uploads
-- `POST /api/uploads/documents` - Upload de arquivos
-- `GET /api/uploads/:id` - Download de arquivos
+### Serviços (Novo v2.0)
+- `GET /api/services` - Listar tipos de serviço
+- `POST /api/services` - Criar novo serviço
+- `PUT /api/services/:id` - Atualizar serviço
+- `DELETE /api/services/:id` - Excluir serviço
+- `GET /api/services/:id` - Obter serviço específico
+
+### Uploads (Aprimorado v2.0)
+- `POST /api/uploads/license` - **Upload de licença de motorista**
+- `GET /api/uploads/files/:filename` - **Visualizar arquivo uploadado**
+- `GET /api/uploads/download/:filename` - **Download direto do arquivo**
+- `POST /api/uploads/documents` - Upload de documentos diversos
+- `GET /api/uploads/:id` - Download de arquivos (legacy)
 
 ## 🔧 Desenvolvimento
 

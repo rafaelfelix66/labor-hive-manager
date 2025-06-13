@@ -66,7 +66,10 @@ model Application {
   englishLevel              Int               @map("english_level")
   hasDriversLicense         Boolean           @default(false) @map("has_drivers_license")
   licenseFileUrl            String?           @map("license_file_url")
+  licenseFileOriginalName   String?           @map("license_file_original_name")
   workExperience            String[]          @map("work_experience")
+  services                  String[]          @default([])
+  hourlyRate                Decimal?          @map("hourly_rate") @db.Decimal(10, 2)
   additionalExperience      String?           @map("additional_experience")
   previousCompanyName       String?           @map("previous_company_name")
   previousCompanyPhone      String?           @map("previous_company_phone")
@@ -157,4 +160,16 @@ model Bill {
   provider ServiceProvider @relation(fields: [providerId], references: [id])
 
   @@map("bills")
+}
+
+model Service {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  description      String?
+  averageHourlyRate Decimal @map("average_hourly_rate") @db.Decimal(10, 2)
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("services")
 }

@@ -23,7 +23,12 @@ export interface PaginationMeta {
 }
 
 export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  meta: PaginationMeta;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
 }
 
 // User types
@@ -87,6 +92,13 @@ export interface CreateApplicationRequest extends Omit<Application, 'id' | 'stat
 export interface UpdateApplicationStatusRequest {
   status: ApplicationStatus;
   reviewedBy: string;
+}
+
+export interface ApplicationFilters {
+  status?: ApplicationStatus;
+  search?: string;
+  page?: number;
+  limit?: number;
 }
 
 // Service Provider types

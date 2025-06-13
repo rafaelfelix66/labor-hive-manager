@@ -1,50 +1,32 @@
 import { Router } from 'express';
+import { authenticate } from '../middleware/auth';
+import {
+  getAllApplications,
+  getApplicationById,
+  createApplication,
+  updateApplication,
+  deleteApplication,
+  getApplicationStats
+} from '../controllers/applicationsController';
 
 const router = Router();
 
-// GET /api/applications
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Get all applications endpoint - to be implemented',
-    data: [],
-  });
-});
+// GET /api/applications/stats - Get application statistics
+router.get('/stats', authenticate, getApplicationStats);
 
-// POST /api/applications
-router.post('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Create application endpoint - to be implemented',
-    data: null,
-  });
-});
+// GET /api/applications - Get all applications with filtering
+router.get('/', authenticate, getAllApplications);
 
-// GET /api/applications/:id
-router.get('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Get application by ID endpoint - to be implemented',
-    data: null,
-  });
-});
+// POST /api/applications - Create new application (public endpoint)
+router.post('/', createApplication);
 
-// PUT /api/applications/:id
-router.put('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Update application endpoint - to be implemented',
-    data: null,
-  });
-});
+// GET /api/applications/:id - Get application by ID
+router.get('/:id', authenticate, getApplicationById);
 
-// DELETE /api/applications/:id
-router.delete('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Delete application endpoint - to be implemented',
-    data: null,
-  });
-});
+// PUT /api/applications/:id - Update application (approve/reject)
+router.put('/:id', authenticate, updateApplication);
+
+// DELETE /api/applications/:id - Delete application
+router.delete('/:id', authenticate, deleteApplication);
 
 export default router;

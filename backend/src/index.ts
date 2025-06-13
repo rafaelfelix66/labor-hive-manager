@@ -21,6 +21,7 @@ import clientRoutes from './routes/clients';
 import supplierRoutes from './routes/suppliers';
 import billRoutes from './routes/bills';
 import uploadRoutes from './routes/uploads';
+import servicesRoutes from './routes/services';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -32,8 +33,12 @@ const PORT = parseInt(process.env.PORT || '5000');
 // Rate limiting
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP to 100 requests per windowMs
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000'), // limit each IP to 1000 requests per windowMs
   message: 'Too many requests from this IP, please try again later.',
+  skip: (req) => {
+    // Skip rate limiting for preflight OPTIONS requests
+    return req.method === 'OPTIONS';
+  },
 });
 
 // Middleware
@@ -42,8 +47,10 @@ app.use(compression());
 app.use(morgan('combined'));
 app.use(limiter);
 app.use(cors({
-  origin: true, // Allow all origins during development
+  origin: process.env.CORS_ORIGIN || true, // Use environment variable or allow all origins
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -65,6 +72,7 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/bills', billRoutes);
 app.use('/api/uploads', uploadRoutes);
+app.use('/api/services', servicesRoutes);
 
 // Error handling middleware
 app.use(notFound);

@@ -53,6 +53,16 @@ export const getAllProviders = async (
             phone: true,
             englishLevel: true,
             hasDriversLicense: true,
+            licenseFileUrl: true,
+            licenseFileOriginalName: true,
+            address1: true,
+            suite: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            emergencyContactName: true,
+            emergencyContactPhone: true,
+            emergencyContactRelation: true,
           }
         }
       },
