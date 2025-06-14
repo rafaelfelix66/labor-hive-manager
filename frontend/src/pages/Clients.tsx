@@ -181,13 +181,13 @@ const Clients = () => {
   };
 
   const sortOptions = [
-    { value: 'companyName', label: 'Nome da Empresa' },
-    { value: 'entity', label: 'Tipo de Entidade' },
-    { value: 'city', label: 'Cidade' },
-    { value: 'wcClass', label: 'Classe WC' },
+    { value: 'companyName', label: 'Company Name' },
+    { value: 'entity', label: 'Entity Type' },
+    { value: 'city', label: 'City' },
+    { value: 'wcClass', label: 'WC Class' },
     { value: 'markup', label: 'Markup' },
-    { value: 'commission', label: 'Comissão' },
-    { value: 'assignedTo', label: 'Designado Para' },
+    { value: 'commission', label: 'Commission' },
+    { value: 'assignedTo', label: 'Assigned To' },
     { value: 'status', label: 'Status' },
   ];
 
@@ -198,7 +198,7 @@ const Clients = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/dashboard" className="flex items-center">
-              <img src="/eom staffing.png" alt="EOM Staffing" className="h-12 w-auto" />
+              <img src="/eom staffing.png" alt="EOM Staffing" className="h-17 w-auto" />
             </Link>
             <Link to="/dashboard" className="text-blue-600 hover:text-blue-800 text-sm">
               ← Back to Dashboard
@@ -236,22 +236,22 @@ const Clients = () => {
               value: entityFilter,
               onChange: setEntityFilter,
               options: uniqueEntities,
-              placeholder: "Todas as entidades",
-              label: "Tipo de Entidade"
+              placeholder: "All entities",
+              label: "Entity Type"
             },
             {
               value: assignedToFilter,
               onChange: setAssignedToFilter,
               options: [
-                { value: 'unassigned', label: 'Não designado' },
+                { value: 'unassigned', label: 'Unassigned' },
                 ...uniqueAssignedTo
               ],
-              placeholder: "Todos os responsáveis",
-              label: "Designado Para"
+              placeholder: "All assigned to",
+              label: "Assigned To"
             }
           ]}
           sortOptions={sortOptions}
-          placeholder="Pesquisar por nome, endereço, cidade..."
+          placeholder="Search by name, address, city..."
           activeFiltersCount={activeFiltersCount}
           onClearFilters={clearFilters}
         />
@@ -282,16 +282,16 @@ const Clients = () => {
             ) : filteredAndSortedClients.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500 mb-4">
-                  {clients.length === 0 ? "Nenhum cliente encontrado." : "Nenhum cliente corresponde aos filtros aplicados."}
+                  {clients.length === 0 ? "No clients found." : "No clients match the applied filters."}
                 </p>
                 {clients.length === 0 ? (
                   <Button onClick={() => setAddModalOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Primeiro Cliente
+                    Add First Client
                   </Button>
                 ) : (
                   <Button onClick={clearFilters} variant="outline">
-                    Limpar Filtros
+                    Clear Filters
                   </Button>
                 )}
               </div>
@@ -311,7 +311,7 @@ const Clients = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Empresa
+                        Company
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
@@ -327,7 +327,7 @@ const Clients = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Entidade
+                        Entity
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
@@ -343,7 +343,7 @@ const Clients = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Localização
+                        Location
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
@@ -359,7 +359,7 @@ const Clients = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Classe WC
+                        WC Class
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
@@ -391,7 +391,7 @@ const Clients = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Comissão
+                        Commission
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
@@ -423,11 +423,11 @@ const Clients = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Designado Para
+                        Assigned To
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
-                    <TableHead>Ações</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

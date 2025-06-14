@@ -201,7 +201,7 @@ const Services = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link to="/dashboard" className="flex items-center">
-                <img src="/eom staffing.png" alt="EOM Staffing" className="h-12 w-auto" />
+                <img src="/eom staffing.png" alt="EOM Staffing" className="h-17 w-auto" />
               </Link>
               <span className="ml-4 text-gray-400">|</span>
               <span className="ml-4 text-lg font-medium text-gray-700">Service Management</span>

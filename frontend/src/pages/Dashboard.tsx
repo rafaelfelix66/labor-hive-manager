@@ -82,10 +82,10 @@ const Dashboard = () => {
           const currentYear = new Date().getFullYear();
           monthlyRevenue = (billsResponse.data || [])
             .filter((bill: any) => {
-              const billDate = new Date(bill.issueDate);
+              const billDate = new Date(bill.createdAt);
               return billDate.getMonth() === currentMonth && billDate.getFullYear() === currentYear;
             })
-            .reduce((sum: number, bill: any) => sum + parseFloat(bill.totalAmount || 0), 0);
+            .reduce((sum: number, bill: any) => sum + parseFloat(bill.totalClient || 0), 0);
         }
       } catch (error) {
         console.warn('Failed to fetch bills:', error);
@@ -162,7 +162,7 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src="/eom staffing.png" alt="EOM Staffing" className="h-12 w-auto" />
+              <img src="/eom staffing.png" alt="EOM Staffing" className="h-17 w-auto" />
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">Welcome, {userRole}</span>

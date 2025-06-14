@@ -175,11 +175,11 @@ const ServiceProviders = () => {
   };
 
   const sortOptions = [
-    { value: 'name', label: 'Nome' },
+    { value: 'name', label: 'Name' },
     { value: 'email', label: 'Email' },
-    { value: 'hourlyRate', label: 'Taxa/Hora' },
-    { value: 'englishLevel', label: 'Nível de Inglês' },
-    { value: 'assignedTo', label: 'Designado Para' },
+    { value: 'hourlyRate', label: 'Hourly Rate' },
+    { value: 'englishLevel', label: 'English Level' },
+    { value: 'assignedTo', label: 'Assigned To' },
     { value: 'status', label: 'Status' },
   ];
 
@@ -190,7 +190,7 @@ const ServiceProviders = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/dashboard" className="flex items-center">
-              <img src="/eom staffing.png" alt="EOM Staffing" className="h-12 w-auto" />
+              <img src="/eom staffing.png" alt="EOM Staffing" className="h-17 w-auto" />
             </Link>
             <Link to="/dashboard" className="text-blue-600 hover:text-blue-800 text-sm">
               ← Back to Dashboard
@@ -228,22 +228,22 @@ const ServiceProviders = () => {
               value: serviceFilter,
               onChange: setServiceFilter,
               options: uniqueServices,
-              placeholder: "Todos os serviços",
-              label: "Serviços"
+              placeholder: "All services",
+              label: "Services"
             },
             {
               value: assignedToFilter,
               onChange: setAssignedToFilter,
               options: [
-                { value: 'unassigned', label: 'Não designado' },
+                { value: 'unassigned', label: 'Unassigned' },
                 ...uniqueAssignedTo
               ],
-              placeholder: "Todos os responsáveis",
-              label: "Designado Para"
+              placeholder: "All assigned to",
+              label: "Assigned To"
             }
           ]}
           sortOptions={sortOptions}
-          placeholder="Pesquisar por nome, email, telefone, serviços..."
+          placeholder="Search by name, email, phone, services..."
           activeFiltersCount={activeFiltersCount}
           onClearFilters={clearFilters}
         />
@@ -274,16 +274,16 @@ const ServiceProviders = () => {
             ) : filteredAndSortedProviders.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500 mb-4">
-                  {providers.length === 0 ? "Nenhum provedor de serviços encontrado." : "Nenhum provedor corresponde aos filtros aplicados."}
+                  {providers.length === 0 ? "No service providers found." : "No providers match the applied filters."}
                 </p>
                 {providers.length === 0 ? (
                   <Button onClick={() => setAddModalOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Primeiro Provedor
+                    Add First Provider
                   </Button>
                 ) : (
                   <Button onClick={clearFilters} variant="outline">
-                    Limpar Filtros
+                    Clear Filters
                   </Button>
                 )}
               </div>
@@ -303,7 +303,7 @@ const ServiceProviders = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Nome
+                        Name
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
@@ -319,11 +319,11 @@ const ServiceProviders = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Contato
+                        Contact
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
-                    <TableHead>Serviços</TableHead>
+                    <TableHead>Services</TableHead>
                     <TableHead 
                       className="cursor-pointer hover:bg-gray-50 select-none"
                       onClick={() => {
@@ -336,7 +336,7 @@ const ServiceProviders = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Taxa/Hora
+                        Hourly Rate
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
@@ -352,11 +352,11 @@ const ServiceProviders = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Nível de Inglês
+                        English Level
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
-                    <TableHead>Licença</TableHead>
+                    <TableHead>License</TableHead>
                     <TableHead 
                       className="cursor-pointer hover:bg-gray-50 select-none"
                       onClick={() => {
@@ -385,11 +385,11 @@ const ServiceProviders = () => {
                       }}
                     >
                       <div className="flex items-center gap-1">
-                        Designado Para
+                        Assigned To
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </TableHead>
-                    <TableHead>Ações</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

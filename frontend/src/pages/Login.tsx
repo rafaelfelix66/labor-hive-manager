@@ -62,7 +62,7 @@ const Login = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center">
-            <img src="/eom staffing.png" alt="EOM Staffing" className="h-16 w-auto" />
+            <img src="/eom staffing.png" alt="EOM Staffing" className="h-20 w-auto" />
           </Link>
         </div>
 
@@ -111,8 +111,7 @@ const Login = () => {
             
             <div className="mt-6 text-center text-sm text-gray-600">
               <p>Demo credentials:</p>
-              <p>Username: admin | Password: aron$199 (for admin access)</p>
-              <p>Username: user | Password: user123 (for regular access)</p>
+              <p>Username: admin | Password: aron$199</p>
             </div>
           </CardContent>
         </Card>

@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { t } from '@/utils/translations';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -78,10 +79,10 @@ export const ApplicationForm = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const steps = [
-    { number: 1, title: "Personal Information" },
-    { number: 2, title: "Professional Experience" },
-    { number: 3, title: "Additional Information" },
-    { number: 4, title: "Review & Submit" },
+    { number: 1, title: t('application.steps.personalInfo') },
+    { number: 2, title: t('application.steps.professionalExperience') },
+    { number: 3, title: t('application.steps.additionalInfo') },
+    { number: 4, title: t('application.steps.reviewSubmit') },
   ];
 
   const progress = (currentStep / steps.length) * 100;
@@ -124,7 +125,7 @@ export const ApplicationForm = () => {
   const handleSubmit = async () => {
     if (!validateCurrentStep()) {
       toast({
-        title: "Missing Required Fields",
+        title: t('application.validation.required'),
         description: "Please fill in all required fields before submitting.",
         variant: "destructive",
       });
@@ -150,8 +151,8 @@ export const ApplicationForm = () => {
       
       if (response.success) {
         toast({
-          title: "Application Submitted Successfully!",
-          description: "Thank you for your application. We'll review it shortly and contact you soon.",
+          title: t('application.review.successTitle'),
+          description: t('application.review.successMessage'),
         });
         
         // Reset form
@@ -164,8 +165,8 @@ export const ApplicationForm = () => {
     } catch (error: any) {
       console.error('Error submitting application:', error);
       toast({
-        title: "Submission Failed",
-        description: error.message || "There was an error submitting your application. Please try again.",
+        title: t('application.review.errorTitle'),
+        description: error.message || t('application.review.errorMessage'),
         variant: "destructive",
       });
     } finally {
@@ -230,7 +231,7 @@ export const ApplicationForm = () => {
               onClick={prevStep}
               disabled={currentStep === 1}
             >
-              Previous
+              {t('application.navigation.back')}
             </Button>
             
             {currentStep < steps.length ? (
@@ -238,7 +239,7 @@ export const ApplicationForm = () => {
                 onClick={nextStep}
                 disabled={!validateCurrentStep()}
               >
-                Next
+                {t('application.navigation.next')}
               </Button>
             ) : (
               <Button 
@@ -249,10 +250,10 @@ export const ApplicationForm = () => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Submitting...
+                    {t('application.review.submitting')}
                   </>
                 ) : (
-                  'Submit Application'
+                  t('application.review.submitApplication')
                 )}
               </Button>
             )}

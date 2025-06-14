@@ -198,7 +198,7 @@ const Suppliers = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/dashboard" className="flex items-center">
-              <img src="/eom staffing.png" alt="EOM Staffing" className="h-12 w-auto" />
+              <img src="/eom staffing.png" alt="EOM Staffing" className="h-17 w-auto" />
             </Link>
             <Link to="/dashboard" className="text-blue-600 hover:text-blue-800 text-sm">
               ← Back to Dashboard

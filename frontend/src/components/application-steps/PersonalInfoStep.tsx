@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ApplicationData } from "../ApplicationForm";
+import { t } from '@/utils/translations';
 
 interface PersonalInfoStepProps {
   data: ApplicationData;
@@ -12,27 +13,27 @@ interface PersonalInfoStepProps {
 export const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) => {
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('application.steps.personalInfo')}</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">First Name *</Label>
+          <Label htmlFor="firstName">{t('application.personalInfo.firstName')} *</Label>
           <Input
             id="firstName"
             value={data.firstName}
             onChange={(e) => updateData({ firstName: e.target.value })}
-            placeholder="Enter your first name"
+            placeholder={t('application.personalInfo.firstName')}
             required
           />
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="lastName">Last Name *</Label>
+          <Label htmlFor="lastName">{t('application.personalInfo.lastName')} *</Label>
           <Input
             id="lastName"
             value={data.lastName}
             onChange={(e) => updateData({ lastName: e.target.value })}
-            placeholder="Enter your last name"
+            placeholder={t('application.personalInfo.lastName')}
             required
           />
         </div>
@@ -40,7 +41,7 @@ export const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) =>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email Address *</Label>
+          <Label htmlFor="email">{t('application.personalInfo.email')} *</Label>
           <Input
             id="email"
             type="email"
@@ -52,7 +53,7 @@ export const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) =>
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number *</Label>
+          <Label htmlFor="phone">{t('application.personalInfo.phone')} *</Label>
           <Input
             id="phone"
             type="tel"
@@ -78,7 +79,7 @@ export const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) =>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+          <Label htmlFor="dateOfBirth">{t('application.personalInfo.dateOfBirth')} *</Label>
           <Input
             id="dateOfBirth"
             type="date"
@@ -91,7 +92,7 @@ export const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) =>
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="ssn">Social Security Number *</Label>
+          <Label htmlFor="ssn">{t('application.personalInfo.ssn')} *</Label>
           <Input
             id="ssn"
             value={data.ssn}
@@ -113,15 +114,15 @@ export const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) =>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="gender">Gender *</Label>
+        <Label htmlFor="gender">{t('application.personalInfo.gender')} *</Label>
         <Select value={data.gender} onValueChange={(value) => updateData({ gender: value })}>
           <SelectTrigger>
-            <SelectValue placeholder="Select your gender" />
+            <SelectValue placeholder={t('application.personalInfo.gender')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Male">Male</SelectItem>
-            <SelectItem value="Female">Female</SelectItem>
-            <SelectItem value="Other">Other</SelectItem>
+            <SelectItem value="Male">{t('application.personalInfo.male')}</SelectItem>
+            <SelectItem value="Female">{t('application.personalInfo.female')}</SelectItem>
+            <SelectItem value="Other">{t('application.personalInfo.other')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
