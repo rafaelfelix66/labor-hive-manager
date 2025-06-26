@@ -42,12 +42,6 @@ export const getAllApplications = async (
             username: true,
             email: true
           }
-        },
-        serviceProvider: {
-          select: {
-            id: true,
-            active: true
-          }
         }
       },
       orderBy: [
@@ -86,22 +80,13 @@ export const getApplicationById = async (
     const { id } = req.params;
 
     const application = await prisma.application.findUnique({
-      where: { id },
+      where: { id: parseInt(id) },
       include: {
         reviewer: {
           select: {
             id: true,
             username: true,
             email: true
-          }
-        },
-        serviceProvider: {
-          select: {
-            id: true,
-            services: true,
-            hourlyRate: true,
-            assignedTo: true,
-            active: true
           }
         }
       },
@@ -132,16 +117,16 @@ export const createApplication = async (
     // Validate required fields
     const requiredFields = [
       'firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 
-      'ssn', 'gender', 'englishLevel', 'services', 
+      'ssn', 'gender', 'englishLevel', 'jobs', 
       'address1', 'city', 'state', 'zipCode', 
       'emergencyContactName', 'emergencyContactPhone', 
       'emergencyContactRelation', 'howDidYouHear'
     ];
 
     for (const field of requiredFields) {
-      if (field === 'services') {
+      if (field === 'jobs') {
         if (!applicationData[field] || !Array.isArray(applicationData[field]) || applicationData[field].length === 0) {
-          throw createError(`${field} is required and must have at least one service`, 400);
+          throw createError(`${field} is required and must have at least one job`, 400);
         }
       } else if (!applicationData[field]) {
         throw createError(`${field} is required`, 400);
@@ -182,12 +167,11 @@ export const updateApplication = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { status, reviewedBy, services, hourlyRate, assignedTo, ...updateData } = req.body;
+    const { status, reviewedBy, jobs, hourlyRate, assignedTo, ...updateData } = req.body;
 
     // Check if application exists
     const existingApplication = await prisma.application.findUnique({
-      where: { id },
-      include: { serviceProvider: true }
+      where: { id: parseInt(id) }
     });
 
     if (!existingApplication) {
@@ -198,7 +182,7 @@ export const updateApplication = async (
     const result = await prisma.$transaction(async (tx) => {
       // Update application status and reviewer
       const updatedApplication = await tx.application.update({
-        where: { id },
+        where: { id: parseInt(id) },
         data: {
           ...updateData,
           ...(status && { status }),
@@ -212,47 +196,83 @@ export const updateApplication = async (
               username: true,
               email: true
             }
-          },
-          serviceProvider: true
+          }
         }
       });
 
-      // If application is approved and no service provider exists, create one
-      if (status === 'approved' && !existingApplication.serviceProvider) {
-        // Use services and hourlyRate from the update data or from the existing application
-        const finalServices = services || existingApplication.services;
-        const finalHourlyRate = hourlyRate || existingApplication.hourlyRate;
+      // Check for existing employee
+      const existingEmployee = await tx.employee.findFirst({
+        where: { applicationId: parseInt(id) }
+      });
 
-        if (!finalServices || finalServices.length === 0 || !finalHourlyRate) {
-          throw createError('Services and hourly rate are required for approval', 400);
+      // If application is approved and no employee exists, create one
+      if (status === 'approved' && !existingEmployee) {
+        // Use jobs and hourlyRate from the update data or from the existing application
+        const finalJobs = jobs || (existingApplication as any).jobs;
+        const finalHourlyRate = hourlyRate || (existingApplication as any).hourlyRate;
+
+        if (!finalJobs || finalJobs.length === 0 || !finalHourlyRate) {
+          throw createError('Jobs and hourly rate are required for approval', 400);
         }
 
-        const serviceProvider = await tx.serviceProvider.create({
+        const employee = await tx.employee.create({
           data: {
-            applicationId: id,
-            services: Array.isArray(finalServices) ? finalServices : [finalServices],
+            // Personal Information from application
+            firstName: updatedApplication.firstName,
+            lastName: updatedApplication.lastName,
+            email: updatedApplication.email,
+            phone: updatedApplication.phone,
+            dateOfBirth: updatedApplication.dateOfBirth,
+            ssn: updatedApplication.ssn,
+            gender: updatedApplication.gender,
+            hasDriversLicense: updatedApplication.hasDriversLicense,
+            licenseFileUrl: updatedApplication.licenseFileUrl,
+            licenseFileOriginalName: updatedApplication.licenseFileOriginalName,
+            
+            // Address Information
+            address1: updatedApplication.address1,
+            suite: updatedApplication.suite,
+            city: updatedApplication.city,
+            state: updatedApplication.state,
+            zipCode: updatedApplication.zipCode,
+            
+            // Emergency Contact
+            emergencyContactName: updatedApplication.emergencyContactName,
+            emergencyContactPhone: updatedApplication.emergencyContactPhone,
+            emergencyContactRelation: updatedApplication.emergencyContactRelation,
+            
+            // Work Information
+            jobs: Array.isArray(finalJobs) ? finalJobs : [finalJobs],
             hourlyRate: parseFloat(finalHourlyRate.toString()),
             assignedTo: assignedTo || 'Manager A',
+            workExperience: updatedApplication.workExperience,
+            additionalExperience: updatedApplication.additionalExperience,
+            previousCompanyName: updatedApplication.previousCompanyName,
+            previousCompanyPhone: updatedApplication.previousCompanyPhone,
+            previousCompanyEmail: updatedApplication.previousCompanyEmail,
+            
+            // System fields
+            applicationId: parseInt(id),
             active: true
           }
         });
 
         return {
           ...updatedApplication,
-          serviceProvider
+          employee
         };
       }
 
-      // If application is approved and service provider exists, update it
-      if (status === 'approved' && existingApplication.serviceProvider) {
-        // Use services and hourlyRate from the update data or from the existing application
-        const finalServices = services || existingApplication.services;
-        const finalHourlyRate = hourlyRate || existingApplication.hourlyRate;
+      // If application is approved and employee exists, update it
+      if (status === 'approved' && existingEmployee) {
+        // Use jobs and hourlyRate from the update data or from the existing application
+        const finalJobs = jobs || (existingApplication as any).jobs;
+        const finalHourlyRate = hourlyRate || (existingApplication as any).hourlyRate;
 
-        const serviceProvider = await tx.serviceProvider.update({
-          where: { applicationId: id },
+        const employee = await tx.employee.update({
+          where: { id: existingEmployee.id },
           data: {
-            services: Array.isArray(finalServices) ? finalServices : [finalServices],
+            jobs: Array.isArray(finalJobs) ? finalJobs : [finalJobs],
             hourlyRate: parseFloat(finalHourlyRate.toString()),
             ...(assignedTo && { assignedTo }),
             active: true
@@ -261,14 +281,14 @@ export const updateApplication = async (
 
         return {
           ...updatedApplication,
-          serviceProvider
+          employee
         };
       }
 
-      // If application is rejected, deactivate service provider if exists
-      if (status === 'rejected' && existingApplication.serviceProvider) {
-        await tx.serviceProvider.update({
-          where: { applicationId: id },
+      // If application is rejected, deactivate employee if exists
+      if (status === 'rejected' && existingEmployee) {
+        await tx.employee.update({
+          where: { id: existingEmployee.id },
           data: { active: false }
         });
       }
@@ -280,7 +300,7 @@ export const updateApplication = async (
       success: true,
       data: result,
       message: status === 'approved' 
-        ? 'Application approved and service provider created successfully'
+        ? 'Application approved and employee created successfully'
         : status === 'rejected'
         ? 'Application rejected'
         : 'Application updated successfully',
@@ -300,17 +320,16 @@ export const deleteApplication = async (
 
     // Check if application exists
     const existingApplication = await prisma.application.findUnique({
-      where: { id },
-      include: { serviceProvider: true }
+      where: { id: parseInt(id) }
     });
 
     if (!existingApplication) {
       throw createError('Application not found', 404);
     }
 
-    // Delete in transaction (service provider will be deleted by cascade)
+    // Delete in transaction (employee will be deleted by cascade)
     await prisma.application.delete({
-      where: { id },
+      where: { id: parseInt(id) },
     });
 
     res.json({

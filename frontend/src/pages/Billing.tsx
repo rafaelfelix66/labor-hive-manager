@@ -47,7 +47,7 @@ const Billing = () => {
   // Modal states
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
+  const [selectedBillId, setSelectedBillId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchBills();
@@ -93,7 +93,7 @@ const Billing = () => {
     }
   };
 
-  const handleViewBill = (billId: string) => {
+  const handleViewBill = (billId: number) => {
     setSelectedBillId(billId);
     setViewModalOpen(true);
   };
@@ -103,7 +103,7 @@ const Billing = () => {
     fetchReports();
   };
 
-  const handleDownloadPDF = async (billId: string, billNumber: string) => {
+  const handleDownloadPDF = async (billId: number, billNumber: string) => {
     try {
       await apiService.generateBillPDF(billId, billNumber);
       toast({
@@ -153,8 +153,8 @@ const Billing = () => {
       const searchMatch = !searchTerm || 
         bill.billNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         bill.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        bill.client.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        `${bill.provider.application.firstName} ${bill.provider.application.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
+        bill.customer.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        `${bill.employee.firstName} ${bill.employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
 
       const statusMatch = statusFilter === 'all' || bill.status === statusFilter;
 
@@ -169,21 +169,21 @@ const Billing = () => {
           aValue = a.billNumber;
           bValue = b.billNumber;
           break;
-        case 'client':
-          aValue = a.client.companyName.toLowerCase();
-          bValue = b.client.companyName.toLowerCase();
+        case 'customer':
+          aValue = a.customer.companyName.toLowerCase();
+          bValue = b.customer.companyName.toLowerCase();
           break;
-        case 'provider':
-          aValue = `${a.provider.application.firstName} ${a.provider.application.lastName}`.toLowerCase();
-          bValue = `${b.provider.application.firstName} ${b.provider.application.lastName}`.toLowerCase();
+        case 'employee':
+          aValue = `${a.employee.firstName} ${a.employee.lastName}`.toLowerCase();
+          bValue = `${b.employee.firstName} ${b.employee.lastName}`.toLowerCase();
           break;
         case 'service':
           aValue = a.service.toLowerCase();
           bValue = b.service.toLowerCase();
           break;
-        case 'totalClient':
-          aValue = a.totalClient;
-          bValue = b.totalClient;
+        case 'totalCustomer':
+          aValue = a.totalCustomer;
+          bValue = b.totalCustomer;
           break;
         case 'status':
           aValue = a.status;
@@ -373,7 +373,7 @@ const Billing = () => {
                   </div>
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">
-                      ${bills.filter(b => b.status === 'Paid').reduce((sum, b) => sum + b.totalClient, 0).toFixed(2)}
+                      ${bills.filter(b => b.status === 'Paid').reduce((sum, b) => sum + b.totalCustomer, 0).toFixed(2)}
                     </div>
                     <p className="text-sm text-blue-700">Total Revenue</p>
                   </div>
@@ -414,7 +414,7 @@ const Billing = () => {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <Input
-                        placeholder="Number, client, service..."
+                        placeholder="Number, customer, service..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10"
@@ -444,8 +444,8 @@ const Billing = () => {
                       <SelectContent>
                         <SelectItem value="createdAt">Creation Date</SelectItem>
                         <SelectItem value="billNumber">Bill Number</SelectItem>
-                        <SelectItem value="client">Client</SelectItem>
-                        <SelectItem value="totalClient">Amount</SelectItem>
+                        <SelectItem value="customer">Customer</SelectItem>
+                        <SelectItem value="totalCustomer">Amount</SelectItem>
                         <SelectItem value="status">Status</SelectItem>
                       </SelectContent>
                     </Select>
@@ -488,39 +488,39 @@ const Billing = () => {
                     <TableHead 
                       className="cursor-pointer hover:bg-gray-50"
                       onClick={() => {
-                        if (sortBy === 'client') {
+                        if (sortBy === 'customer') {
                           setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
                         } else {
-                          setSortBy('client');
+                          setSortBy('customer');
                           setSortOrder('asc');
                         }
                       }}
                     >
                       <div className="flex items-center">
-                        Client
+                        Customer
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                       </div>
                     </TableHead>
-                    <TableHead>Provider</TableHead>
+                    <TableHead>Employee</TableHead>
                     <TableHead>Service</TableHead>
                     <TableHead>Hours</TableHead>
                     <TableHead 
                       className="cursor-pointer hover:bg-gray-50"
                       onClick={() => {
-                        if (sortBy === 'totalClient') {
+                        if (sortBy === 'totalCustomer') {
                           setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
                         } else {
-                          setSortBy('totalClient');
+                          setSortBy('totalCustomer');
                           setSortOrder('desc');
                         }
                       }}
                     >
                       <div className="flex items-center">
-                        Client Total
+                        Customer Total
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                       </div>
                     </TableHead>
-                    <TableHead>Provider Gets</TableHead>
+                    <TableHead>Employee Gets</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
@@ -551,17 +551,17 @@ const Billing = () => {
                     filteredAndSortedBills.map((bill) => (
                       <TableRow key={bill.id}>
                         <TableCell className="font-medium">{bill.billNumber}</TableCell>
-                        <TableCell>{bill.client.companyName}</TableCell>
+                        <TableCell>{bill.customer.companyName}</TableCell>
                         <TableCell>
-                          {bill.provider.application.firstName} {bill.provider.application.lastName}
+                          {bill.employee.firstName} {bill.employee.lastName}
                         </TableCell>
                         <TableCell>{bill.service}</TableCell>
                         <TableCell>{bill.hoursWorked}h</TableCell>
                         <TableCell className="font-semibold text-green-600">
-                          {formatCurrency(bill.totalClient)}
+                          {formatCurrency(bill.totalCustomer)}
                         </TableCell>
                         <TableCell className="font-semibold text-blue-600">
-                          {formatCurrency(bill.totalProvider)}
+                          {formatCurrency(bill.totalEmployee)}
                         </TableCell>
                         <TableCell>{formatDate(bill.createdAt)}</TableCell>
                         <TableCell>

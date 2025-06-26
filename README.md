@@ -4,7 +4,7 @@ Sistema de gestão de terceirização de serviços freelancers com arquitetura e
 
 ## 📋 Descrição
 
-O Labor Hive Manager é uma plataforma completa para gerenciar serviços de freelancers, conectando prestadores de serviços qualificados com clientes empresariais. O sistema inclui gestão de candidaturas, prestadores, clientes, fornecedores e faturamento.
+O Labor Hive Manager é uma plataforma completa para gerenciar serviços de freelancers, conectando prestadores de serviços qualificados com clientes empresariais. O sistema inclui gestão de candidaturas, prestadores, customers, fornecedores e faturamento.
 
 ## 🏗️ Arquitetura
 
@@ -25,7 +25,7 @@ O Labor Hive Manager é uma plataforma completa para gerenciar serviços de free
 - **Candidaturas** - Formulário multi-etapa para freelancers
 - **Admin Panel** - Gestão de candidaturas com filtros avançados
 - **Gestão de Prestadores** - CRUD completo de service providers
-- **Gestão de Clientes** - CRUD completo de empresas clientes
+- **Gestão de Customers** - CRUD completo de empresas customers
 - **Gestão de Fornecedores** - CRUD completo de empresas fornecedoras
 - **Sistema de Faturamento** - Geração, controle e relatórios de faturas
 - **📄 Geração de PDF** - Faturas profissionais em PDF
@@ -40,6 +40,25 @@ O Labor Hive Manager é uma plataforma completa para gerenciar serviços de free
 - **🔍 Visualização de Licenças** - Sistema robusto para visualizar e baixar documentos de motorista
 - **📊 Dashboard Aprimorado** - Estatísticas em tempo real com melhor tratamento de erros
 - **🔒 Validação de Formulários** - Checkbox obrigatório para aceite de termos e condições
+
+### 🆕 Novas Funcionalidades v3.0
+- **🌐 Sistema de Tradução Bilíngue** - Suporte completo para inglês e espanhol
+- **🏠 Homepage Redesignada** - Foco em recrutamento de profissionais com design EOM
+- **🎨 Brand Colors Atualizados** - Cores oficiais da EOM (#18407c azul, #e74a3e laranja)
+- **🌍 Language Switcher** - Alternância de idioma na homepage e formulário de aplicação
+- **💰 Monthly Revenue Fix** - Correção do cálculo de receita mensal no dashboard
+- **🔧 Ngrok Integration** - Scripts para exposição do site na internet via ngrok
+- **📱 Responsive Design** - Design responsivo aprimorado com imagens profissionais
+
+### 🆕 Novas Funcionalidades v4.0 - Refatoração de Schema e Estabilidade
+- **🗃️ Migração de Schema Completa** - Transição de Clients/Providers/Services para Customers/Employees/Jobs
+- **🔄 Sistema de Aplicação-Employee** - Applications aprovadas são automaticamente convertidas em Employees
+- **📊 Dashboard Otimizado** - APIs de estatísticas mais eficientes e tratamento robusto de erros
+- **🛠️ Correções de Schema** - Resolvidos problemas de sincronização entre banco e aplicação
+- **💼 Gestão de Funcionários** - Sistema completo de employees com dados pessoais e profissionais
+- **🏢 Gestão de Clientes** - Migração de clients para customers com estrutura otimizada
+- **🎯 Tipos de Trabalho** - Jobs substituem services com melhor estruturação
+- **🔧 Estabilidade de Produção** - Correções críticas para ambiente de produção Docker
 
 ### Backend (API)
 - **Autenticação JWT** - Sistema seguro de autenticação
@@ -171,21 +190,83 @@ curl http://localhost:3001/health  # Backend
 curl http://localhost:5174/       # Frontend
 ```
 
-## 📁 Estrutura de Dados
+## 📁 Estrutura de Dados v4.0
 
 ### Principais Entidades
 - **Users** - Usuários do sistema (admin/manager/user)
 - **Applications** - Candidaturas de freelancers
-- **Service Providers** - Prestadores aprovados
-- **Companies** - Clientes e fornecedores
+- **Employees** - Funcionários aprovados (ex-Applications)
+- **Customers** - Empresas clientes (ex-Clients)
+- **Jobs** - Tipos de trabalho disponíveis (ex-Services)
 - **Bills** - Faturas e pagamentos
 
 ### Relacionamentos
 ```
 Users 1:N Applications (reviewed_by)
-Applications 1:1 Service_Providers
-Companies (clients) 1:N Bills
-Service_Providers 1:N Bills
+Applications 1:1 Employees (applicationId)
+Customers 1:N Bills
+Employees 1:N Bills
+Jobs são referenciados como array em Applications e Employees
+```
+
+### Schema Atualizado
+```prisma
+model Application {
+  id          Int           @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  email       String
+  // ... outros campos pessoais
+  jobs        String[]      // Array de tipos de trabalho
+  status      ApplicationStatus
+  employees   Employee[]    // Relacionamento com funcionários
+  reviewer    User?         @relation(fields: [reviewedBy], references: [id])
+}
+
+model Employee {
+  id              Int       @id @default(autoincrement())
+  firstName       String
+  lastName        String
+  email           String    @unique
+  phone           String
+  // ... dados pessoais e de endereço
+  jobs            String[]  // Tipos de trabalho que executa
+  hourlyRate      Decimal
+  assignedTo      String
+  applicationId   Int?      // Referência à aplicação original
+  bills           Bill[]
+  application     Application? @relation(fields: [applicationId], references: [id])
+}
+
+model Customer {
+  id          Int       @id @default(autoincrement())
+  companyName String
+  entity      EntityType
+  type        String
+  // ... dados da empresa
+  bills       Bill[]
+}
+
+model Bill {
+  id            Int        @id @default(autoincrement())
+  billNumber    String     @unique
+  customerId    Int
+  employeeId    Int
+  job           String
+  hoursWorked   Decimal
+  totalCustomer Decimal
+  totalEmployee Decimal
+  customer      Customer   @relation(fields: [customerId], references: [id])
+  employee      Employee   @relation(fields: [employeeId], references: [id])
+}
+
+model Job {
+  id                Int      @id @default(autoincrement())
+  name              String   @unique
+  description       String?
+  averageHourlyRate Decimal
+  active            Boolean  @default(true)
+}
 ```
 
 ## 🔐 Autenticação
@@ -249,7 +330,70 @@ User:  username: user,  password: user123
 - **Validação de Schema**: Prisma schema atualizado com novos campos
 - **Error Boundaries**: Tratamento gracioso de erros na UI
 
-## 📝 API Endpoints
+### 🌐 Sistema de Tradução v3.0
+- **Bilíngue Completo**: Suporte nativo para inglês (EN) e espanhol (ES)
+- **Translation System**: Sistema simples e eficiente sem dependências complexas
+- **Language Switcher**: Botão de alternância de idioma com persistência no localStorage
+- **Homepage Traduzida**: Textos principais da landing page em ambos idiomas
+- **Application Form**: Formulário de aplicação completamente traduzido
+- **Professional UI**: Interface limpa sem emojis, apenas siglas EN/ES
+- **Automatic Reload**: Aplicação automática das traduções após troca de idioma
+
+### 🎨 Homepage Redesign v3.0
+- **EOM Branding**: Design focado na marca EOM Staffing
+- **Hero Section**: Seção principal com gradiente azul EOM (#18407c)
+- **Professional Images**: Imagens do Unsplash para trabalhadores e construção
+- **Call-to-Action**: Botões de ação focados em recrutamento de profissionais
+- **Brand Colors**: Paleta oficial EOM (azul #18407c, laranja #e74a3e)
+- **Typography**: Tipografia moderna e hierarquia visual clara
+- **Mobile Responsive**: Design completamente responsivo para todos dispositivos
+
+## 🔧 Detalhes das Correções v4.0 - Schema e Estabilidade
+
+### 🗃️ Migração de Schema Completa
+- **Transição Entities**: Clients → Customers, Providers → Employees, Services → Jobs
+- **Prisma Schema**: Completamente reestruturado com relacionamentos corretos
+- **Database Migration**: Reset completo com preservação da lógica de negócio
+- **Seed Data**: Dados de exemplo atualizados para nova estrutura
+
+### 🔄 Sistema Application-Employee Otimizado
+- **Approval Workflow**: Applications aprovadas criam automaticamente Employees
+- **Data Transfer**: Todos os dados pessoais transferidos da Application para Employee
+- **Referência Bidirecional**: Employee mantém referência à Application original via `applicationId`
+- **Status Sync**: Status da Application sincronizado com ativação do Employee
+
+### 🛠️ Correções Críticas de Produção
+- **Schema Sync Issues**: Resolvidos erros de `employees` include inválido
+- **Prisma Client**: Regeneração forçada após mudanças de schema
+- **Frontend Fixes**: Correções em `employee.application.firstName` → `employee.firstName`
+- **API Stability**: Todas as APIs de dashboard funcionando sem erros 500
+
+### 💼 Sistema de Employees Completo
+- **Dados Pessoais**: firstName, lastName, email, phone, dateOfBirth, ssn, gender
+- **Endereço**: address1, suite, city, state, zipCode
+- **Contato Emergência**: emergencyContactName, phone, relation
+- **Trabalho**: jobs[], hourlyRate, assignedTo, workExperience[]
+- **Sistema**: applicationId, active, timestamps
+
+### 🏢 Sistema de Customers Otimizado
+- **Empresa**: companyName, entity (Corporation/LLC/Partnership), type
+- **Endereço**: street, suite, city, state, zipCode, country
+- **Financeiro**: wcClass, markupType, markupValue, commission
+- **Gestão**: assignedTo, internalNotes, active status
+
+### 🎯 Sistema de Jobs Estruturado
+- **Básico**: name (único), description
+- **Financeiro**: averageHourlyRate para estimativas
+- **Status**: active para controle de visibilidade
+- **Integration**: Usado como array em Applications e Employees
+
+### 🔧 Melhorias de Estabilidade
+- **Error Handling**: Tratamento robusto de erros em todas as APIs
+- **Container Fixes**: Correções de permissões e builds Docker
+- **Database Reset**: Processo seguro de reset com seed automático
+- **Production Ready**: Ambiente de produção estável e funcional
+
+## 📝 API Endpoints v4.0
 
 ### Autenticação
 - `POST /api/auth/login` - Login
@@ -257,36 +401,45 @@ User:  username: user,  password: user123
 - `GET /api/auth/me` - Usuário atual
 
 ### Candidaturas
-- `GET /api/applications` - Listar candidaturas
-- `POST /api/applications` - Criar candidatura
-- `PUT /api/applications/:id` - Atualizar candidatura
+- `GET /api/applications` - Listar candidaturas com filtros e paginação
+- `POST /api/applications` - Criar candidatura (formulário público)
+- `PUT /api/applications/:id` - Atualizar/aprovar candidatura (cria Employee automaticamente)
 - `DELETE /api/applications/:id` - Excluir candidatura
+- `GET /api/applications/stats` - Estatísticas de candidaturas
 
-### Prestadores
-- `GET /api/providers` - Listar prestadores
-- `POST /api/providers` - Criar prestador
-- `PUT /api/providers/:id` - Atualizar prestador
+### Funcionários (Novo v4.0)
+- `GET /api/employees` - Listar funcionários ativos
+- `GET /api/employees/:id` - Obter funcionário específico
+- `PUT /api/employees/:id` - Atualizar dados do funcionário
+- `DELETE /api/employees/:id` - Desativar funcionário
 
-### Clientes/Fornecedores
-- `GET /api/clients` - Listar clientes
+### Clientes (Customers v4.0)
+- `GET /api/customers` - Listar clientes com filtros
+- `POST /api/customers` - Criar novo cliente
+- `PUT /api/customers/:id` - Atualizar cliente
+- `DELETE /api/customers/:id` - Excluir cliente
+- `GET /api/customers/:id` - Obter cliente específico
+
+### Fornecedores
 - `GET /api/suppliers` - Listar fornecedores
-- `POST /api/clients` - Criar cliente
 - `POST /api/suppliers` - Criar fornecedor
+- `PUT /api/suppliers/:id` - Atualizar fornecedor
+- `DELETE /api/suppliers/:id` - Excluir fornecedor
 
 ### Faturamento
-- `GET /api/bills` - Listar faturas
-- `POST /api/bills` - Criar fatura
+- `GET /api/bills` - Listar faturas com dados completos de Customer e Employee
+- `POST /api/bills` - Criar fatura (requer customerId e employeeId)
 - `PUT /api/bills/:id` - Atualizar fatura
 - `DELETE /api/bills/:id` - Excluir fatura
 - `GET /api/bills/:id/pdf` - **Gerar PDF da fatura**
 - `GET /api/bills/reports` - Relatórios de faturamento
 
-### Serviços (Novo v2.0)
-- `GET /api/services` - Listar tipos de serviço
-- `POST /api/services` - Criar novo serviço
-- `PUT /api/services/:id` - Atualizar serviço
-- `DELETE /api/services/:id` - Excluir serviço
-- `GET /api/services/:id` - Obter serviço específico
+### Tipos de Trabalho (Jobs v4.0)
+- `GET /api/jobs` - Listar tipos de trabalho disponíveis
+- `POST /api/jobs` - Criar novo tipo de trabalho
+- `PUT /api/jobs/:id` - Atualizar tipo de trabalho
+- `DELETE /api/jobs/:id` - Excluir tipo de trabalho
+- `GET /api/jobs/:id` - Obter tipo de trabalho específico
 
 ### Uploads (Aprimorado v2.0)
 - `POST /api/uploads/license` - **Upload de licença de motorista**
